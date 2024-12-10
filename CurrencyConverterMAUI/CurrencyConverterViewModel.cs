@@ -11,9 +11,46 @@ namespace CurrencyConverterMAUI
         private readonly CurrencyConverterAPI _api;
         private RatesJson _ratesJson;
         private Dictionary<string, Valute> _rates;
+
+        private string lastSelectedFromCurrency, lastSelectedToCurrency;
         public ObservableCollection<string> Currencies { get; private set; }
 
-        private string _selectedFromCurrency;
+        private bool _isLoading = false;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsAvailable));
+                }
+            }
+        }
+
+        public bool IsAvailable
+        {
+            get => !_isLoading;
+        }
+
+        private DateTime _selectedDate = DateTime.Today;
+        public DateTime SelectedDate
+        {
+            get => _selectedDate;
+            set
+            {
+                if (_selectedDate != value)
+                {
+                    _selectedDate = value;
+                    OnPropertyChanged();
+                    LoadCurrencies();
+                }
+            }
+        }
+
+        private string _selectedFromCurrency = "";
         public string SelectedFromCurrency
         {
             get => _selectedFromCurrency;
@@ -22,13 +59,14 @@ namespace CurrencyConverterMAUI
                 if (_selectedFromCurrency != value)
                 {
                     _selectedFromCurrency = value;
+                    lastSelectedFromCurrency = _selectedFromCurrency;
                     OnPropertyChanged();
                     ConvertCurrencies();
                 }
             }
         }
 
-        private string _selectedToCurrency;
+        private string _selectedToCurrency = "";
         public string SelectedToCurrency
         {
             get => _selectedToCurrency;
@@ -37,6 +75,7 @@ namespace CurrencyConverterMAUI
                 if (_selectedToCurrency != value)
                 {
                     _selectedToCurrency = value;
+                    lastSelectedToCurrency = _selectedToCurrency;
                     OnPropertyChanged();
                     ConvertCurrencies();
                 }
@@ -58,7 +97,7 @@ namespace CurrencyConverterMAUI
             }
         }
 
-        private string _convertedAmount;
+        private string _convertedAmount = "1.00";
         public string ConvertedAmount
         {
             get => _convertedAmount;
@@ -79,10 +118,12 @@ namespace CurrencyConverterMAUI
             LoadCurrencies();
         }
 
-        private async void LoadCurrencies() { 
+        private async Task LoadCurrencies(int recursionDepth = 0) { 
             try
             {
-                _ratesJson = await _api.CallAPI();
+                IsLoading = true;
+
+                _ratesJson = await _api.CallAPI(_selectedDate);
                 _rates = _ratesJson.Rates;
 
                 foreach(var rate in _rates)
@@ -90,8 +131,21 @@ namespace CurrencyConverterMAUI
                     Currencies.Add($"{rate.Value.Name} ({rate.Key})");
                 }
 
-                SelectedFromCurrency = Currencies.FirstOrDefault();
-                SelectedToCurrency = Currencies.FirstOrDefault();
+                if (!string.IsNullOrEmpty(lastSelectedFromCurrency))
+                    SelectedFromCurrency = Currencies.Where(x => x == lastSelectedFromCurrency).FirstOrDefault("");
+                else
+                    SelectedFromCurrency = Currencies.FirstOrDefault("");
+
+                if (!string.IsNullOrEmpty(lastSelectedToCurrency))
+                    SelectedToCurrency = Currencies.Where(x => x == lastSelectedToCurrency).FirstOrDefault("");
+                else
+                    SelectedToCurrency = Currencies.FirstOrDefault("");
+
+                SelectedDate = _ratesJson.Date;
+
+                IsLoading = false;
+
+                ConvertCurrencies();
 
             } catch(Exception ex)
             {
@@ -106,7 +160,8 @@ namespace CurrencyConverterMAUI
 
         private void ConvertCurrencies()
         {
-            if (!string.IsNullOrEmpty(SelectedFromCurrency) &&
+            if (Double.TryParse(InputAmount, out double inputAmountDouble) && 
+                !string.IsNullOrEmpty(SelectedFromCurrency) &&
                 !string.IsNullOrEmpty(SelectedToCurrency) &&
                 !string.IsNullOrEmpty(InputAmount) &&
                 _rates != null)
@@ -120,18 +175,14 @@ namespace CurrencyConverterMAUI
                     Valute fromCurrency = _rates[fromCurrencyCode];
                     Valute toCurrency = _rates[toCurrencyCode];
 
-                    double fromCurrencyRate = fromCurrency.Value / fromCurrency.Nominal;
-                    double toCurrencyRate = toCurrency.Value / toCurrency.Nominal;
-
-                    double conversionRate = fromCurrencyRate / toCurrencyRate;
-                    double converted = conversionRate * Double.Parse(InputAmount);
-                    ConvertedAmount = converted.ToString("F2");
+                    double convertedAmountDouble = CurrencyConverterAPI.ConvertCurrencies(fromCurrency, toCurrency, inputAmountDouble);
+                    ConvertedAmount = convertedAmountDouble.ToString("F2");
                 }
                 else
                 {
                     ConvertedAmount = string.Empty;
                 }
-            } 
+            }
             else
             {
                 ConvertedAmount = string.Empty;

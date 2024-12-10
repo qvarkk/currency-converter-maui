@@ -7,25 +7,35 @@
     <ContentPage.BindingContext>
         <vm:CurrencyConverterViewModel />
     </ContentPage.BindingContext>
-    
+
     <ScrollView>
         <VerticalStackLayout
             Padding="30,0"
             Spacing="25">
 
+            <DatePicker MinimumDate="01/01/2000"
+                        x:Name="DateSelector"
+                        Date="{Binding SelectedDate}"
+                        IsEnabled="{Binding IsAvailable}" />
+
             <HorizontalStackLayout>
                 <Picker ItemsSource="{Binding Currencies}"
-                        SelectedItem="{Binding SelectedFromCurrency}" />
+                            SelectedItem="{Binding SelectedFromCurrency}"
+                            IsEnabled="{Binding IsAvailable}" />
                 <Entry Keyboard="Numeric" 
-                       Text="{Binding InputAmount}" />
+                           Text="{Binding InputAmount}" 
+                           IsEnabled="{Binding IsAvailable}" />
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
                 <Picker ItemsSource="{Binding Currencies}" 
-                        SelectedItem="{Binding SelectedToCurrency}" />
+                            SelectedItem="{Binding SelectedToCurrency}"
+                            IsEnabled="{Binding IsAvailable}" />
                 <Entry IsReadOnly="True"
-                       Text="{Binding ConvertedAmount}" />
+                           Text="{Binding ConvertedAmount}"
+                           IsEnabled="{Binding IsAvailable}" />
             </HorizontalStackLayout>
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding IsLoading}" />
         </VerticalStackLayout>
     </ScrollView>
 

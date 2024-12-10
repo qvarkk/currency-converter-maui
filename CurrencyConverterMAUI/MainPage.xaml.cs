@@ -8,6 +8,7 @@ namespace CurrencyConverterMAUI
         public MainPage()
         {
             InitializeComponent();
+            DateSelector.MaximumDate = DateTime.Today;
         }
     }
 }
