@@ -10,31 +10,41 @@
 
     <ScrollView>
         <VerticalStackLayout
+            HorizontalOptions="Center"
             Padding="30,0"
             Spacing="25">
 
-            <DatePicker MinimumDate="01/01/2000"
-                        x:Name="DateSelector"
-                        Date="{Binding SelectedDate}"
-                        IsEnabled="{Binding IsAvailable}" />
-
-            <HorizontalStackLayout>
-                <Picker ItemsSource="{Binding Currencies}"
-                            SelectedItem="{Binding SelectedFromCurrency}"
+            <VerticalStackLayout Spacing="30">
+                <DatePicker HorizontalOptions="Center"
+                            MinimumDate="01/01/2000"
+                            x:Name="DateSelector"
+                            Date="{Binding SelectedDate}"
                             IsEnabled="{Binding IsAvailable}" />
-                <Entry Keyboard="Numeric" 
-                           Text="{Binding InputAmount}" 
-                           IsEnabled="{Binding IsAvailable}" />
-            </HorizontalStackLayout>
+                
+                <FlexLayout MaximumWidthRequest="500">
+                    <Picker WidthRequest="300"
+                                ItemsSource="{Binding Currencies}"
+                                SelectedItem="{Binding SelectedFromCurrency}"
+                                IsEnabled="{Binding IsAvailable}" />
+                    <Entry WidthRequest="50"
+                                HorizontalTextAlignment="End"
+                                Keyboard="Numeric"
+                                Text="{Binding InputAmount}" 
+                                IsEnabled="{Binding IsAvailable}" />
+                </FlexLayout>
 
-            <HorizontalStackLayout>
-                <Picker ItemsSource="{Binding Currencies}" 
-                            SelectedItem="{Binding SelectedToCurrency}"
-                            IsEnabled="{Binding IsAvailable}" />
-                <Entry IsReadOnly="True"
-                           Text="{Binding ConvertedAmount}"
-                           IsEnabled="{Binding IsAvailable}" />
-            </HorizontalStackLayout>
+                <FlexLayout MaximumWidthRequest="500">
+                    <Picker WidthRequest="300"
+                                ItemsSource="{Binding Currencies}" 
+                                SelectedItem="{Binding SelectedToCurrency}"
+                                IsEnabled="{Binding IsAvailable}" />
+                    <Entry WidthRequest="50"
+                                HorizontalTextAlignment="End"
+                                IsReadOnly="True"
+                                Text="{Binding ConvertedAmount}"
+                                IsEnabled="{Binding IsAvailable}" />
+                </FlexLayout>
+            </VerticalStackLayout>
             <ActivityIndicator IsRunning="True" IsVisible="{Binding IsLoading}" />
         </VerticalStackLayout>
     </ScrollView>

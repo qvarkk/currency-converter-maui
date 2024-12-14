@@ -8,7 +8,7 @@
     Title="CurrencyConverterMAUI">
 
     <ShellContent
-        Title="Home"
+        Title="Currency Converter"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 

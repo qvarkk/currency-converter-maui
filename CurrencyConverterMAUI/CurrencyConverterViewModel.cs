@@ -11,8 +11,6 @@ namespace CurrencyConverterMAUI
         private readonly CurrencyConverterAPI _api;
         private RatesJson _ratesJson;
         private Dictionary<string, Valute> _rates;
-
-        private string lastSelectedFromCurrency, lastSelectedToCurrency;
         public ObservableCollection<string> Currencies { get; private set; }
 
         private bool _isLoading = false;
@@ -59,7 +57,6 @@ namespace CurrencyConverterMAUI
                 if (_selectedFromCurrency != value)
                 {
                     _selectedFromCurrency = value;
-                    lastSelectedFromCurrency = _selectedFromCurrency;
                     OnPropertyChanged();
                     ConvertCurrencies();
                 }
@@ -75,7 +72,6 @@ namespace CurrencyConverterMAUI
                 if (_selectedToCurrency != value)
                 {
                     _selectedToCurrency = value;
-                    lastSelectedToCurrency = _selectedToCurrency;
                     OnPropertyChanged();
                     ConvertCurrencies();
                 }
@@ -118,28 +114,32 @@ namespace CurrencyConverterMAUI
             LoadCurrencies();
         }
 
-        private async Task LoadCurrencies(int recursionDepth = 0) { 
+        private async Task LoadCurrencies() { 
             try
             {
                 IsLoading = true;
 
+                string lastSelectedFromCurrency = SelectedFromCurrency;
+                string lastSelectedToCurrency = SelectedToCurrency;
+
                 _ratesJson = await _api.CallAPI(_selectedDate);
                 _rates = _ratesJson.Rates;
 
+                Currencies.Clear();
                 foreach(var rate in _rates)
                 {
                     Currencies.Add($"{rate.Value.Name} ({rate.Key})");
                 }
 
                 if (!string.IsNullOrEmpty(lastSelectedFromCurrency))
-                    SelectedFromCurrency = Currencies.Where(x => x == lastSelectedFromCurrency).FirstOrDefault("");
+                    SelectedFromCurrency = Currencies.Where(x => x == lastSelectedFromCurrency).FirstOrDefault();
                 else
-                    SelectedFromCurrency = Currencies.FirstOrDefault("");
+                    SelectedFromCurrency = Currencies.FirstOrDefault();
 
                 if (!string.IsNullOrEmpty(lastSelectedToCurrency))
-                    SelectedToCurrency = Currencies.Where(x => x == lastSelectedToCurrency).FirstOrDefault("");
+                    SelectedToCurrency = Currencies.Where(x => x == lastSelectedToCurrency).FirstOrDefault();
                 else
-                    SelectedToCurrency = Currencies.FirstOrDefault("");
+                    SelectedToCurrency = Currencies.FirstOrDefault();
 
                 SelectedDate = _ratesJson.Date;
 

@@ -41,11 +41,15 @@ namespace CurrencyConverterCore
                 if (JsonSerializer.Deserialize<RatesJson>(response.Content) is not RatesJson rates)
                     throw new InvalidOperationException("Couldn't deserialize API response");
 
-                // since ruble is not included by default add it manualy
+                // since ruble is not included by default, add it manualy
                 rates.Rates.Add("RUB", new Valute { CharCode = "RUB", Name = "Российский рубль", Nominal = 1, Value = 1 });
 
                 return rates;
 
+            } catch (StackOverflowException e)
+            {
+                Console.WriteLine($"Couldn't find rates for the given date: {e.Message}");
+                return new RatesJson();
             } catch (Exception e)
             {
                 Console.WriteLine($"An error occurred while calling the API: {e.Message}");
